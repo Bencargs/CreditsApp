@@ -1,0 +1,49 @@
+﻿@page
+@model CreditsApp.Pages.Account.IndexModel
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+<h2>Your Account</h2>
+
+<div class="card my-3">
+    <div class="card-body">
+        <h4 class="card-title mb-1">Balance</h4>
+        <p class="fs-3 fw-semibold">@Model.Balance.ToString("0.00") credits</p>
+        <small class="text-muted">Handle: @Model.Handle</small>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title mb-3">Send credits</h4>
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="Transfer.ToHandle" class="form-label"></label>
+                <input asp-for="Transfer.ToHandle" class="form-control" placeholder="@@someone" />
+                <span asp-validation-for="Transfer.ToHandle" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Transfer.Amount" class="form-label"></label>
+                <input asp-for="Transfer.Amount" class="form-control" />
+                <span asp-validation-for="Transfer.Amount" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Transfer.Message" class="form-label"></label>
+                <input asp-for="Transfer.Message" class="form-control" placeholder="Thanks for your help!" />
+                <span asp-validation-for="Transfer.Message" class="text-danger"></span>
+            </div>
+
+            <button class="btn btn-primary" type="submit">Send</button>
+            @if (!string.IsNullOrWhiteSpace(Model.ResultMessage))
+            {
+                <span class="ms-3">@Model.ResultMessage</span>
+            }
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

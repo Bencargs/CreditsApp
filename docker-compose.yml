@@ -1,0 +1,32 @@
+version: "3.9"
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: credits_sql
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Your_strong_Password123
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+
+  api:
+    build:
+      context: ./Credits.Api
+      dockerfile: Dockerfile
+    container_name: credits_api
+    depends_on:
+      - db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Default=Data Source=/app/data/credits.db
+    ports:
+      - "8080:8080"
+    volumes:
+      - api_data:/app/data
+    # If you want hot-reload dev: mount source + use dotnet watch (optional)
+
+volumes:
+  api_data:

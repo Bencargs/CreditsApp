@@ -1,0 +1,13 @@
+﻿{
+  "profiles": {
+    "Credits.Api": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "applicationUrl": "https://localhost:8081;http://localhost:8080",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ConnectionStrings__Default": "Data Source=./data/credits.db"
+      }
+    }
+  }
+}
