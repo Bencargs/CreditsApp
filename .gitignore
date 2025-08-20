@@ -265,4 +265,9 @@ FakesAssemblies/
 MarketAnalysis/results.json
 MarketAnalysis/Logs/logfile.txt
 
+# SQLite local database
+*.db
+*.db-shm
+*.db-wal
+
 *.received.*
