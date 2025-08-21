@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using CreditsApp.Account.Models;
+using CreditsApp.Accounting.Models;
 using CreditsApp.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -45,6 +46,8 @@ public class IndexModel : PageModel
         var me = await _users.Users
             .Include(u => u.Account)
             .SingleAsync(u => u.Id == Guid.Parse(_users.GetUserId(User)!));
+        
+        await EnsureAccountAndInitialCreditAsync(me);
 
         var myAccountId = me.Account!.Id;
 
@@ -94,5 +97,70 @@ public class IndexModel : PageModel
                 Message = x.Message
             };
         }).ToList();
+    }
+    
+    private async Task EnsureAccountAndInitialCreditAsync(AppUser me)
+    {
+        // Ensure Account exists
+        if (me.Account == null)
+        {
+            var existing = await _db.Accounts.SingleOrDefaultAsync(a => a.UserId == me.Id);
+            if (existing == null)
+            {
+                existing = new CreditsApp.Account.Models.Account { Id = Guid.NewGuid(), UserId = me.Id };
+                _db.Accounts.Add(existing);
+                await _db.SaveChangesAsync();
+            }
+            me.Account = existing;
+        }
+
+        // If the account has no ledger entries yet, grant initial credits
+        var hasEntries = await _db.LedgerEntries.AnyAsync(e => e.AccountId == me.Account!.Id);
+        if (!hasEntries)
+        {
+            // Fetch system account (created by your Seed)
+            var systemUser = await _db.Users.FirstAsync(u => u.Email == Constants.SystemEmail);
+            var systemAccount = await _db.Accounts.FirstAsync(a => a.UserId == systemUser.Id);
+
+            var now = DateTimeOffset.UtcNow;
+            var transferId = Guid.NewGuid();
+
+            _db.Transfers.Add(new Transfer
+            {
+                Id = transferId,
+                FromAccountId = systemAccount.Id,
+                ToAccountId = me.Account.Id,
+                Amount = Constants.InitialCredits, // 50,000
+                Message = "Initial signup bonus",
+                IdempotencyKey = $"init-{me.Account.Id}",
+                CreatedAt = now,
+                Status = "Succeeded"
+                // If you added CreatedAtUtc, set it here too
+                // CreatedAtUtc = now.UtcDateTime
+            });
+
+            _db.LedgerEntries.AddRange(
+                new LedgerEntry
+                {
+                    Id = Guid.NewGuid(),
+                    AccountId = systemAccount.Id,
+                    TransferId = transferId,
+                    Amount = Constants.InitialCredits,
+                    Type = EntryType.Debit,
+                    CreatedAt = now
+                },
+                new LedgerEntry
+                {
+                    Id = Guid.NewGuid(),
+                    AccountId = me.Account.Id,
+                    TransferId = transferId,
+                    Amount = Constants.InitialCredits,
+                    Type = EntryType.Credit,
+                    CreatedAt = now
+                }
+            );
+
+            await _db.SaveChangesAsync();
+        }
     }
 }
