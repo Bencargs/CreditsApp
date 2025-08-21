@@ -131,9 +131,60 @@ public class IndexModel : PageModel
         if (changed)
         {
             await _db.SaveChangesAsync();
-            // Optional: ensure the nav is tracked
             await _db.Entry(me).Reference(u => u.Account).LoadAsync();
         }
+        
+        var hasEntries = await _db.LedgerEntries.AnyAsync(e => e.AccountId == me.Account!.Id);
+        if (!hasEntries)
+        {
+            await AddInitialCredits(me);
+        }
+    }
+
+    private async Task AddInitialCredits(AppUser me)
+    {
+        // Get system account
+        var systemUser = await _db.Users.FirstAsync(u => u.Email == Constants.SystemEmail);
+        var systemAccount = await _db.Accounts.FirstAsync(a => a.UserId == systemUser.Id);
+
+        var now = DateTimeOffset.UtcNow;
+        var transferId = Guid.NewGuid();
+
+        _db.Transfers.Add(new Transfer
+        {
+            Id = transferId,
+            FromAccountId = systemAccount.Id,
+            ToAccountId = me.Account.Id,
+            Amount = Constants.InitialCredits,
+            Message = "Initial signup bonus",
+            IdempotencyKey = $"init-{me.Account.Id}",
+            CreatedAt = now,
+            Status = "Succeeded"
+            // If you added CreatedAtUtc earlier:
+            // CreatedAtUtc = now.UtcDateTime
+        });
+
+        _db.LedgerEntries.AddRange(
+            new LedgerEntry
+            {
+                Id = Guid.NewGuid(),
+                AccountId = systemAccount.Id,
+                TransferId = transferId,
+                Amount = Constants.InitialCredits,
+                Type = EntryType.Debit,
+                CreatedAt = now
+            },
+            new LedgerEntry
+            {
+                Id = Guid.NewGuid(),
+                AccountId = me.Account.Id,
+                TransferId = transferId,
+                Amount = Constants.InitialCredits,
+                Type = EntryType.Credit,
+                CreatedAt = now
+            }
+        );
+        await _db.SaveChangesAsync();
     }
 
 

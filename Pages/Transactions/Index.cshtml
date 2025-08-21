@@ -1,0 +1,62 @@
+﻿@page
+@model CreditsApp.Pages.Transactions.IndexModel
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+<h2>Transactions</h2>
+
+@if (!Model.Rows.Any())
+{
+    <div class="alert alert-info mt-3">No transactions yet.</div>
+}
+else
+{
+    <div class="table-responsive mt-3">
+        <table class="table align-middle">
+            <thead>
+            <tr>
+                <th style="width: 180px;">Date</th>
+                <th style="width: 120px;">Direction</th>
+                <th>Counterparty</th>
+                <th style="width: 140px;" class="text-end">Amount</th>
+                <th>Message</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var t in Model.Rows)
+            {
+                var badge = t.Direction == "Sent" ? "danger" : "success";
+                <tr>
+                    <td>@t.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                    <td><span class="badge text-bg-@badge">@t.Direction</span></td>
+                    <td>
+                        <div class="fw-semibold">@(t.CounterpartyHandle ?? "(no handle)")</div>
+                        <div class="text-muted small">@t.CounterpartyEmail</div>
+                    </td>
+                    <td class="text-end fw-semibold">
+                        @((t.Amount >= 0 ? "+" : "") + t.Amount.ToString("0.00"))
+                    </td>
+                    <td>@(t.Message ?? "")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+    <nav aria-label="Transactions pages" class="mt-3">
+        <ul class="pagination">
+            <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+                <a class="page-link" asp-page="./Index" asp-route-page="@(Model.Page - 1)">Prev</a>
+            </li>
+
+            @for (var p = 1; p <= Model.TotalPages; p++)
+            {
+                <li class="page-item @(p == Model.Page ? "active" : "")">
+                    <a class="page-link" asp-page="./Index" asp-route-page="@p">@p</a>
+                </li>
+            }
+
+            <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
+                <a class="page-link" asp-page="./Index" asp-route-page="@(Model.Page + 1)">Next</a>
+            </li>
+        </ul>
+    </nav>
+}

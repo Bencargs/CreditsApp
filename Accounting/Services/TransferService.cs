@@ -42,6 +42,7 @@ public class TransferService
         if (balance < cmd.Amount)
             throw new InvalidOperationException("Insufficient credits.");
 
+        var now = DateTimeOffset.UtcNow;
         var transfer = new Transfer
         {
             Id = Guid.NewGuid(),
@@ -50,7 +51,8 @@ public class TransferService
             Amount = decimal.Round(cmd.Amount, 2, MidpointRounding.AwayFromZero),
             Message = string.IsNullOrWhiteSpace(cmd.Message) ? null : cmd.Message!.Trim(),
             IdempotencyKey = cmd.IdempotencyKey,
-            CreatedAt = DateTimeOffset.UtcNow,
+            CreatedAt = now,
+            CreatedAtUtc = now.UtcDateTime,
             Status = "Succeeded"
         };
 

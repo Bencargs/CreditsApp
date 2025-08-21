@@ -5,10 +5,11 @@ Send virtual credits to anyone.
 ![Landing](Demo/Landing.png)
 ![Login](Demo/Login.png)
 ![Transfer](Demo/Transfer.png)
+![Transactions](Demo/Transactions.png)
 
 ---
 
-## ✨ Features
+## Features
 
 - **User accounts & auth** via ASP.NET Core Identity (cookie auth)
 - **Double-entry ledger** (no mutable balances)
@@ -19,7 +20,7 @@ Send virtual credits to anyone.
 
 ---
 
-## 🚀 Quick start (local)
+## Quick start (local)
 
 Requirements: **.NET 8 SDK**
 
@@ -47,7 +48,7 @@ Open:
 
 ---
 
-## 🧭 What you can do
+## What you can do
 
 - **Register & Login** (Identity UI):
   - `/Identity/Account/Register`
@@ -68,7 +69,7 @@ Open:
 
 ---
 
-## 🧱 Architecture (short)
+## Architecture (short)
 
 - **Identity user (`AppUser`)** ←→ **Account** (1:1)
 - **Transfer** creates two **LedgerEntry** rows:
@@ -80,7 +81,7 @@ This model is auditable and makes refunds/adjustments easy (append entries; don�
 
 ---
 
-## 🗂️ Project structure
+##  Project structure
 
 ```
 CreditsApp/
@@ -111,7 +112,7 @@ CreditsApp/
 
 ---
 
-## ⚙️ Configuration
+##  Configuration
 
 **SQLite connection string**
 
@@ -132,7 +133,7 @@ CreditsApp/
 
 ---
 
-## 🐳 Docker (optional)
+## Docker (optional)
 
 Example `docker-compose.yml`:
 
@@ -162,7 +163,7 @@ docker compose up --build
 
 ---
 
-## 🔐 Security & safety notes
+## Security & safety notes
 
 - This is **virtual credits** only; if you ever accept **real money**, integrate a PSP (e.g., Stripe) and treat deposits as a credit from a **system treasury account** on webhook success.
 - Add **rate limiting** and **transfer limits** early (ASP.NET Core Rate Limiting middleware).
@@ -171,7 +172,7 @@ docker compose up --build
 
 ---
 
-## 🧪 Migrations
+## Migrations
 
 Creating a new migration:
 
@@ -189,7 +190,7 @@ dotnet ef database update --project CreditsApp
 
 ---
 
-## 📝 Known quirks (SQLite)
+## Known quirks (SQLite)
 
 - **Decimal SUM**: SQLite can’t translate `Sum(decimal)` — code casts to `double` in LINQ and back to `decimal` after summation.
 - **RowVersion**: SQL Server’s `rowversion` isn’t available in SQLite. This app doesn’t require it because the ledger is append-only.
@@ -197,19 +198,18 @@ dotnet ef database update --project CreditsApp
 
 ---
 
-## 🛣️ Roadmap
+##  Roadmap
 
 - Balance snapshots / denormalized balances (with optimistic concurrency)
 - Transfer history UI (paging/filtering)
 - Email/push notifications for received credits
 - Rate limiting & daily/monthly caps
 - Admin dashboard & audit queries
-- Switch amounts to **cents** (`long`) for perfect arithmetic
 - Optional front-end SPA (Blazor or React) using the same API
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork & clone
 2. Create a feature branch
@@ -217,7 +217,3 @@ dotnet ef database update --project CreditsApp
 4. Open a PR 🚀
 
 ---
-
-## 📄 License
-
-MIT (or your preferred license). Replace this section if needed.
